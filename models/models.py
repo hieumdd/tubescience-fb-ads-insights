@@ -190,7 +190,6 @@ class FacebookAdsInsights(metaclass=ABCMeta):
     def run(self):
         with requests.Session() as session:
             rows = self._get_insights(session, self._get_report_request(session))
-        rows
         response = {
             "table": self.table,
             "ads_account_id": self.ads_account_id,

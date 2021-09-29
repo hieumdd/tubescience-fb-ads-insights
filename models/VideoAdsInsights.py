@@ -16,6 +16,7 @@ class VideoAdsInsights(FacebookAdsInsights):
         "video_p75_watched_actions",
         "video_p95_watched_actions",
         "video_p100_watched_actions",
+        "video_thruplay_watched_actions",
         "video_play_actions",
     ]
 
@@ -109,6 +110,19 @@ class VideoAdsInsights(FacebookAdsInsights):
         },
         {
             "name": "video_play_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_thruplay_watched_actions",
             "type": "RECORD",
             "mode": "REPEATED",
             "fields": [
@@ -225,6 +239,19 @@ class VideoAdsInsights(FacebookAdsInsights):
                     for action in row["video_play_actions"]
                 ]
                 if row.get("video_play_actions", [])
+                else [],
+                "video_thruplay_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_thruplay_watched_actions"]
+                ]
+                if row.get("video_thruplay_watched_actions", [])
                 else [],
             }
             for row in rows
