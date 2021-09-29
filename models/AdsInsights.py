@@ -17,6 +17,14 @@ class AdsInsights(FacebookAdsInsights):
         "impressions",
         "actions",
         "action_values",
+        "video_30_sec_watched_actions",
+        "video_p25_watched_actions",
+        "video_p50_watched_actions",
+        "video_p75_watched_actions",
+        "video_p95_watched_actions",
+        "video_p100_watched_actions",
+        "video_thruplay_watched_actions",
+        "video_play_actions",
     ]
 
     schema = [
@@ -48,6 +56,110 @@ class AdsInsights(FacebookAdsInsights):
         },
         {
             "name": "action_values",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_30_sec_watched_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_p25_watched_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_p50_watched_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_p75_watched_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_p95_watched_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_p100_watched_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_play_actions",
+            "type": "RECORD",
+            "mode": "REPEATED",
+            "fields": [
+                {"name": "action_type", "type": "STRING"},
+                {"name": "value", "type": "NUMERIC"},
+                {"name": "_1d_view", "type": "NUMERIC"},
+                {"name": "_1d_click", "type": "NUMERIC"},
+                {"name": "_7d_click", "type": "NUMERIC"},
+                {"name": "_7d_view", "type": "NUMERIC"},
+            ],
+        },
+        {
+            "name": "video_thruplay_watched_actions",
             "type": "RECORD",
             "mode": "REPEATED",
             "fields": [
@@ -103,6 +215,110 @@ class AdsInsights(FacebookAdsInsights):
                     for action in row["action_values"]
                 ]
                 if row.get("action_values", [])
+                else [],
+                "video_30_sec_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_30_sec_watched_actions"]
+                ]
+                if row.get("video_30_sec_watched_actions", [])
+                else [],
+                "video_p25_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_p25_watched_actions"]
+                ]
+                if row.get("video_p25_watched_actions", [])
+                else [],
+                "video_p50_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_p50_watched_actions"]
+                ]
+                if row.get("video_p50_watched_actions", [])
+                else [],
+                "video_p75_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_p75_watched_actions"]
+                ]
+                if row.get("video_p75_watched_actions", [])
+                else [],
+                "video_p95_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_p95_watched_actions"]
+                ]
+                if row.get("video_p95_watched_actions", [])
+                else [],
+                "video_p100_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_p100_watched_actions"]
+                ]
+                if row.get("video_p100_watched_actions", [])
+                else [],
+                "video_play_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_play_actions"]
+                ]
+                if row.get("video_play_actions", [])
+                else [],
+                "video_thruplay_watched_actions": [
+                    {
+                        "action_type": action.get("action_type"),
+                        "value": action.get("value"),
+                        "_1d_view": action.get("1d_view"),
+                        "_1d_click": action.get("1d_click"),
+                        "_7d_view": action.get("7d_view"),
+                        "_7d_click": action.get("7d_click"),
+                    }
+                    for action in row["video_thruplay_watched_actions"]
+                ]
+                if row.get("video_thruplay_watched_actions", [])
                 else [],
             }
             for row in rows
