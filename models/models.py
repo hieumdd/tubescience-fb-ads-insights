@@ -77,6 +77,33 @@ class FacebookAdsInsights(metaclass=ABCMeta):
                     "level": "ad",
                     "fields": json.dumps(self.fields),
                     "action_attribution_windows": json.dumps(self.windows),
+                    "filtering": json.dumps(
+                        [
+                            {
+                                "field": "ad.impressions",
+                                "operator": "GREATER_THAN",
+                                "value": 0,
+                            },
+                            {
+                                "field": "ad.effective_status",
+                                "operator": "IN",
+                                "value": [
+                                    "ACTIVE",
+                                    "PAUSED",
+                                    "DELETED",
+                                    "PENDING_REVIEW",
+                                    "DISAPPROVED",
+                                    "PREAPPROVED",
+                                    "PENDING_BILLING_INFO",
+                                    "CAMPAIGN_PAUSED",
+                                    "ARCHIVED",
+                                    "ADSET_PAUSED",
+                                    "IN_PROCESS",
+                                    "WITH_ISSUES",
+                                ],
+                            },
+                        ]
+                    ),
                     "time_increment": 1,
                     "time_range": json.dumps(
                         {
@@ -102,6 +129,8 @@ class FacebookAdsInsights(metaclass=ABCMeta):
                 and res["async_status"] == "Job Completed"
             ):
                 return report_run_id
+            elif res["async_status"] == "Job Failed":
+                raise requests.exceptions.HTTPError(res)
             else:
                 time.sleep(10)
                 return _poll_report_request(report_run_id)
@@ -115,6 +144,7 @@ class FacebookAdsInsights(metaclass=ABCMeta):
         }
         if after:
             params["after"] = after
+        params
         with session.get(
             f"{BASE_URL}/{report_run_id}/insights",
             params=params,
@@ -122,8 +152,9 @@ class FacebookAdsInsights(metaclass=ABCMeta):
             res = r.json()
         data = res["data"]
         next_ = res["paging"].get("next")
+        next_
         return (
-            data if next_ else data + self._get_insights(session, report_run_id, next_)
+            data + self._get_insights(session, report_run_id, res["paging"]['cursors']['after']) if next_ else data
         )
 
     @abstractmethod
