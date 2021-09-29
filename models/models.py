@@ -68,7 +68,7 @@ class FacebookAdsInsights(metaclass=ABCMeta):
         self.start = datetime(2021, 9, 1)
         self.end = datetime(2021, 9, 5)
 
-    def _get_report_request(self, session):
+    def _get_report_request(self, session, attempt=0):
         def _send_report_request():
             with session.post(
                 f"{BASE_URL}/{self.ads_account_id}/insights",
@@ -130,12 +130,15 @@ class FacebookAdsInsights(metaclass=ABCMeta):
             ):
                 return report_run_id
             elif res["async_status"] == "Job Failed":
-                raise requests.exceptions.HTTPError(res)
+                return self._get_report_request(session, attempt + 1)
             else:
                 time.sleep(10)
                 return _poll_report_request(report_run_id)
 
-        return _poll_report_request(_send_report_request())
+        if attempt < 5:
+            return _poll_report_request(_send_report_request())
+        else:
+            raise RuntimeError("Too many attempts")
 
     def _get_insights(self, session, report_run_id, after=None):
         params = {
@@ -193,8 +196,8 @@ class FacebookAdsInsights(metaclass=ABCMeta):
         response = {
             "table": self.table,
             "ads_account_id": self.ads_account_id,
-            "start": self.start,
-            "end": self.end,
+            "start": self.start.strftime(DATE_FORMAT),
+            "end": self.end.strftime(DATE_FORMAT),
             "num_processed": len(rows),
         }
         if rows:

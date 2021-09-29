@@ -5,12 +5,7 @@ import pytest
 from main import main
 
 START = "2021-09-01"
-END = "2021-09-15"
-
-DATE = {
-    "start": START,
-    "end": END,
-}
+END = "2021-09-05"
 
 
 def run(data):
