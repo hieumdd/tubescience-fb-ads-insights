@@ -3,8 +3,9 @@ from unittest.mock import Mock
 import pytest
 
 from main import main
+from tasks import ACCOUNTS
 
-START = "2021-09-10"
+START = "2021-09-15"
 END = "2021-09-25"
 
 
@@ -16,9 +17,7 @@ def run(data):
 
 @pytest.mark.parametrize(
     "ads_account_id",
-    [
-        "act_1747490262138666",
-    ],
+    ACCOUNTS,
 )
 @pytest.mark.parametrize(
     ("start", "end"),
@@ -26,7 +25,10 @@ def run(data):
         (None, None),
         (START, END),
     ],
-    ids=["auto", "manual"],
+    ids=[
+        "auto",
+        "manual",
+    ],
 )
 def test_pipelines(ads_account_id, start, end):
     res = run(
@@ -39,3 +41,25 @@ def test_pipelines(ads_account_id, start, end):
     assert res["num_processed"] >= 0
     if res["num_processed"] > 0:
         assert res["output_rows"] == res["num_processed"]
+
+
+@pytest.mark.parametrize(
+    ("start", "end"),
+    [
+        (None, None),
+        (START, END),
+    ],
+    ids=[
+        "auto",
+        "manual",
+    ],
+)
+def test_tasks(start, end):
+    res = run(
+        {
+            "task": "fb",
+            "start": start,
+            "end": end,
+        }
+    )
+    assert res["tasks"] > 0
