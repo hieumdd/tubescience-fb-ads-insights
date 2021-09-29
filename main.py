@@ -1,7 +1,17 @@
 from models.models import FacebookAdsInsights
 
-x = FacebookAdsInsights.factory("AdsInsights", "act_1747490262138666", None, None)
-# x = FacebookAdsInsights.factory("AdsInsights2", "act_1747490262138666", None, None)
-# x = FacebookAdsInsights.factory("VideoAdsInsights", "act_1747490262138666", None, None)
-y = x.run()
-y
+
+def main(request):
+    data = request.get_json()
+    print(data)
+
+    if "ads_account_id" in data:
+        response = FacebookAdsInsights.factory(
+            "AdsInsights",
+            data["ads_account_id"],
+            data.get("start"),
+            data.get("end"),
+        ).run()
+
+    print(response)
+    return response
