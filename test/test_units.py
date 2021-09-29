@@ -4,8 +4,8 @@ import pytest
 
 from main import main
 
-START = "2021-09-01"
-END = "2021-09-05"
+START = "2021-09-10"
+END = "2021-09-25"
 
 
 def run(data):

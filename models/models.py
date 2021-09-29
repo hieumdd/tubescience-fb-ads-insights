@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import importlib
 from abc import ABCMeta, abstractmethod
@@ -65,8 +65,12 @@ class FacebookAdsInsights(metaclass=ABCMeta):
     def __init__(self, ads_account_id, start, end):
         self.table = self.__class__.__name__
         self.ads_account_id = ads_account_id
-        self.start = datetime(2021, 9, 1)
-        self.end = datetime(2021, 9, 5)
+        self.start = (
+            (NOW - timedelta(days=8))
+            if not start
+            else datetime.strptime(start, DATE_FORMAT)
+        )
+        self.end = NOW if not end else datetime.strptime(end, DATE_FORMAT)
 
     def _get_report_request(self, session, attempt=0):
         def _send_report_request():
@@ -157,7 +161,12 @@ class FacebookAdsInsights(metaclass=ABCMeta):
         next_ = res["paging"].get("next")
         next_
         return (
-            data + self._get_insights(session, report_run_id, res["paging"]['cursors']['after']) if next_ else data
+            data
+            + self._get_insights(
+                session, report_run_id, res["paging"]["cursors"]["after"]
+            )
+            if next_
+            else data
         )
 
     @abstractmethod
@@ -165,15 +174,19 @@ class FacebookAdsInsights(metaclass=ABCMeta):
         pass
 
     def _load(self, rows):
-        output_rows = BQ_CLIENT.load_table_from_json(
-            rows,
-            f"{DATASET}.{self.table}",
-            job_config=bigquery.LoadJobConfig(
-                create_disposition="CREATE_IF_NEEDED",
-                write_disposition="WRITE_APPEND",
-                schema=self.schema,
-            ),
-        ).result().output_rows
+        output_rows = (
+            BQ_CLIENT.load_table_from_json(
+                rows,
+                f"{DATASET}.{self.table}",
+                job_config=bigquery.LoadJobConfig(
+                    create_disposition="CREATE_IF_NEEDED",
+                    write_disposition="WRITE_APPEND",
+                    schema=self.schema,
+                ),
+            )
+            .result()
+            .output_rows
+        )
         self._update()
         return output_rows
 
