@@ -138,3 +138,4 @@ dmypy.json
 cython_debug/
 tubescience-sm-781e8a524a96.json
 .vscode
+.DS_Store

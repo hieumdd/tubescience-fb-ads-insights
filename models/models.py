@@ -170,7 +170,7 @@ class FacebookAdsInsights(metaclass=ABCMeta):
                 write_disposition="WRITE_APPEND",
                 schema=self.schema,
             ),
-        ).result()
+        ).result().output_rows
         self._update()
         return output_rows
 
