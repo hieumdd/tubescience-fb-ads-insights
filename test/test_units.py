@@ -5,7 +5,7 @@ import pytest
 from main import main
 from tasks import ACCOUNTS
 
-START = "2021-09-15"
+START = "2021-09-01"
 END = "2021-09-25"
 
 
