@@ -139,7 +139,7 @@ class FacebookAdsInsights(metaclass=ABCMeta):
                 time.sleep(10)
                 return _poll_report_request(report_run_id)
 
-        if attempt < 5:
+        if attempt < 2:
             return _poll_report_request(_send_report_request())
         else:
             raise RuntimeError("Too many attempts")
