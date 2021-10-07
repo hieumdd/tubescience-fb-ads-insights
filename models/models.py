@@ -40,17 +40,10 @@ class FacebookAdsInsights(metaclass=ABCMeta):
         "7d_view",
     ]
 
-    keys = {
-        "p_key": [
-            "date_start",
-            "date_stop",
-            "campaign_id",
-            "adset_id",
-            "ad_id",
-            "account_id",
-        ],
-        "incre_key": "_batched_at",
-    }
+    @property
+    @abstractmethod
+    def keys(self):
+        pass
 
     @property
     @abstractmethod

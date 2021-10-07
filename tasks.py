@@ -4,6 +4,11 @@ import uuid
 
 from google.cloud import tasks_v2
 
+TABLES = [
+    "AdsInsights",
+    "VideoInsights",
+]
+
 ACCOUNTS = [
     "act_1747490262138666",
     "act_3863802906447",

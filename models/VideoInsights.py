@@ -2,6 +2,19 @@ from models.models import FacebookAdsInsights
 
 
 class VideoInsights(FacebookAdsInsights):
+    keys = {
+        "p_key": [
+            "date_start",
+            "date_stop",
+            "account_id",
+            "campaign_id",
+            "adset_id",
+            "ad_id",
+            "video_asset.id",
+        ],
+        "incre_key": "_batched_at",
+    }
+
     fields = [
         "date_start",
         "date_stop",
