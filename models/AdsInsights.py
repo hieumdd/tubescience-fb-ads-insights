@@ -27,6 +27,8 @@ class AdsInsights(FacebookAdsInsights):
         "video_play_actions",
     ]
 
+    breakdowns = None
+
     schema = [
         {"name": "account_id", "type": "NUMERIC"},
         {"name": "date_start", "type": "DATE"},

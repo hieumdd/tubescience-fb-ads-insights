@@ -8,9 +8,9 @@ def main(request):
 
     if "task" in data:
         response = create_tasks(data)
-    elif "ads_account_id" in data:
+    elif "table" in data and "ads_account_id" in data:
         response = FacebookAdsInsights.factory(
-            "AdsInsights",
+            data["table"],
             data["ads_account_id"],
             data.get("start"),
             data.get("end"),

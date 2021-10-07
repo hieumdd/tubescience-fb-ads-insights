@@ -59,6 +59,11 @@ class FacebookAdsInsights(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def breakdowns(self):
+        pass
+
+    @property
+    @abstractmethod
     def schema(self):
         pass
 
@@ -74,48 +79,51 @@ class FacebookAdsInsights(metaclass=ABCMeta):
 
     def _get_report_request(self, session, attempt=0):
         def _send_report_request():
+            params = {
+                "access_token": os.getenv("ACCESS_TOKEN"),
+                "level": "ad",
+                "fields": json.dumps(self.fields),
+                "action_attribution_windows": json.dumps(self.windows),
+                "filtering": json.dumps(
+                    [
+                        {
+                            "field": "ad.impressions",
+                            "operator": "GREATER_THAN",
+                            "value": 0,
+                        },
+                        {
+                            "field": "ad.effective_status",
+                            "operator": "IN",
+                            "value": [
+                                "ACTIVE",
+                                "PAUSED",
+                                "DELETED",
+                                "PENDING_REVIEW",
+                                "DISAPPROVED",
+                                "PREAPPROVED",
+                                "PENDING_BILLING_INFO",
+                                "CAMPAIGN_PAUSED",
+                                "ARCHIVED",
+                                "ADSET_PAUSED",
+                                "IN_PROCESS",
+                                "WITH_ISSUES",
+                            ],
+                        },
+                    ]
+                ),
+                "time_increment": 1,
+                "time_range": json.dumps(
+                    {
+                        "since": self.start.strftime(DATE_FORMAT),
+                        "until": self.end.strftime(DATE_FORMAT),
+                    }
+                ),
+            }
+            if self.breakdowns:
+                params["breakdowns"] = self.breakdowns
             with session.post(
                 f"{BASE_URL}/{self.ads_account_id}/insights",
-                params={
-                    "access_token": os.getenv("ACCESS_TOKEN"),
-                    "level": "ad",
-                    "fields": json.dumps(self.fields),
-                    "action_attribution_windows": json.dumps(self.windows),
-                    "filtering": json.dumps(
-                        [
-                            {
-                                "field": "ad.impressions",
-                                "operator": "GREATER_THAN",
-                                "value": 0,
-                            },
-                            {
-                                "field": "ad.effective_status",
-                                "operator": "IN",
-                                "value": [
-                                    "ACTIVE",
-                                    "PAUSED",
-                                    "DELETED",
-                                    "PENDING_REVIEW",
-                                    "DISAPPROVED",
-                                    "PREAPPROVED",
-                                    "PENDING_BILLING_INFO",
-                                    "CAMPAIGN_PAUSED",
-                                    "ARCHIVED",
-                                    "ADSET_PAUSED",
-                                    "IN_PROCESS",
-                                    "WITH_ISSUES",
-                                ],
-                            },
-                        ]
-                    ),
-                    "time_increment": 1,
-                    "time_range": json.dumps(
-                        {
-                            "since": self.start.strftime(DATE_FORMAT),
-                            "until": self.end.strftime(DATE_FORMAT),
-                        }
-                    ),
-                },
+                params=params,
             ) as r:
                 res = r.json()
             return res["report_run_id"]

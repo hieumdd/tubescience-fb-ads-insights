@@ -6,7 +6,7 @@ from main import main
 from tasks import ACCOUNTS
 
 START = "2021-09-01"
-END = "2021-09-25"
+END = "2021-10-05"
 
 
 def run(data):
@@ -15,6 +15,13 @@ def run(data):
     return res
 
 
+@pytest.mark.parametrize(
+    "table",
+    [
+        "AdsInsights",
+        "VideoInsights",
+    ]
+)
 @pytest.mark.parametrize(
     "ads_account_id",
     ACCOUNTS,
@@ -30,9 +37,10 @@ def run(data):
         "manual",
     ],
 )
-def test_pipelines(ads_account_id, start, end):
+def test_pipelines(table, ads_account_id,  start, end):
     res = run(
         {
+            "table": table,
             "ads_account_id": ads_account_id,
             "start": start,
             "end": end,
