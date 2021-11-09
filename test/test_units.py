@@ -6,7 +6,7 @@ from main import main
 from tasks import ACCOUNTS
 
 START = "2021-09-01"
-END = "2021-10-05"
+END = "2021-10-01"
 
 
 def run(data):
@@ -30,11 +30,11 @@ def run(data):
     ("start", "end"),
     [
         (None, None),
-        (START, END),
+        # (START, END),
     ],
     ids=[
         "auto",
-        "manual",
+        # "manual",
     ],
 )
 def test_pipelines(table, ads_account_id,  start, end):
