@@ -19,7 +19,7 @@ def run(data):
     "table",
     [
         "AdsInsights",
-        "VideoInsights",
+        # "VideoInsights",
     ]
 )
 @pytest.mark.parametrize(
