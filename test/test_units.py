@@ -5,8 +5,8 @@ import pytest
 from main import main
 from tasks import ACCOUNTS
 
-START = "2021-09-01"
-END = "2021-10-01"
+START = "2021-10-01"
+END = "2021-11-10"
 
 
 def run(data):
@@ -18,8 +18,8 @@ def run(data):
 @pytest.mark.parametrize(
     "table",
     [
-        "AdsInsights",
-        # "VideoInsights",
+        # "AdsInsights",
+        "VideoInsights",
     ]
 )
 @pytest.mark.parametrize(
