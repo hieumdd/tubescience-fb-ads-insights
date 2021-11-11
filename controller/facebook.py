@@ -20,8 +20,9 @@ class AsyncFailedException(Exception):
         super().__init__(f"Async Job Failed: {message}")
 
 
-class InsightsFailedException(Exception):
-    pass
+class TimeoutException(Exception):
+    def __init__(self, message):
+        super().__init__(f"Too many attempt Failed: {message}")
 
 
 ReportRunId = str
@@ -114,12 +115,10 @@ def poll_async_report(session: requests.Session, report_run_id: str) -> ReportRu
             res["async_percent_completion"] == 100
             and res["async_status"] == "Job Completed"
         ):
-            print("polled")
             return None, report_run_id
         elif res["async_status"] == "Job Failed":
             return AsyncFailedException(report_run_id), None
         else:
-            print("polling")
             time.sleep(10)
             return poll_async_report(session, report_run_id)
     except Exception as e:
@@ -132,13 +131,23 @@ def get_async_report(
     ads_account_id: str,
     start: datetime,
     end: datetime,
+    attempt: int = 0,
 ) -> ReportRunRes:
     err_request, request = requester(session, ads_account_id, start, end)
     if not err_request and request:
         err_polled_request, polled_request = poll_async_report(session, request)
         if err_polled_request and isinstance(err_polled_request, AsyncFailedException):
-            print(err_polled_request)
-            return get_async_report(session, requester, ads_account_id, start, end)
+            if attempt < 5:
+                return get_async_report(
+                    session,
+                    requester,
+                    ads_account_id,
+                    start,
+                    end,
+                    attempt + 1,
+                )
+            else:
+                raise err_polled_request
         else:
             return err_polled_request, polled_request
     else:
