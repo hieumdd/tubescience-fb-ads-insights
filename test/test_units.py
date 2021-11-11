@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from main import main
-from tasks import ACCOUNTS
+from tasks import ACCOUNTS, TABLES
 
 START = "2021-10-01"
 END = "2021-11-10"
@@ -17,10 +17,7 @@ def run(data):
 
 @pytest.mark.parametrize(
     "table",
-    [
-        # "AdsInsights",
-        "VideoInsights",
-    ]
+    TABLES,
 )
 @pytest.mark.parametrize(
     "ads_account_id",
@@ -37,7 +34,7 @@ def run(data):
         # "manual",
     ],
 )
-def test_pipelines(table, ads_account_id,  start, end):
+def test_pipelines(table, ads_account_id, start, end):
     res = run(
         {
             "table": table,

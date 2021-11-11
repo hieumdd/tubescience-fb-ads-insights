@@ -43,18 +43,20 @@ def run(
     )
     if report_id:
         err_data, data = get_insights(session, report_id)
-        if data:
-            return None, {
+        if not err_data:
+            response = {
                 "ads_account_id": ads_account_id,
                 "start": start,
                 "end": end,
                 "num_processed": len(data),
-                "output_rows": model["load"](
+            }
+            if len(data) > 0:
+                response['output_rows'] = model["load"](
                     model["name"],
                     client,
                     transform_add_batched_at(model["transform"](data)),
-                ),
-            }
-        if err_data:
-            return err_data, None
-    return err_report_id, None
+                )
+            return None, response
+        else:
+            raise err_data
+    raise err_report_id

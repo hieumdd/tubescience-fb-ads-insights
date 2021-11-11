@@ -53,33 +53,33 @@ def request_async_report(
             "level": "ad",
             "fields": json.dumps(fields),
             "action_attribution_windows": json.dumps(windows),
-            # "filtering": json.dumps(
-            #     [
-            #         {
-            #             "field": "ad.impressions",
-            #             "operator": "GREATER_THAN",
-            #             "value": 0,
-            #         },
-            #         {
-            #             "field": "ad.effective_status",
-            #             "operator": "IN",
-            #             "value": [
-            #                 "ACTIVE",
-            #                 "PAUSED",
-            #                 "DELETED",
-            #                 "PENDING_REVIEW",
-            #                 "DISAPPROVED",
-            #                 "PREAPPROVED",
-            #                 "PENDING_BILLING_INFO",
-            #                 "CAMPAIGN_PAUSED",
-            #                 "ARCHIVED",
-            #                 "ADSET_PAUSED",
-            #                 "IN_PROCESS",
-            #                 "WITH_ISSUES",
-            #             ],
-            #         },
-            #     ]
-            # ),
+            "filtering": json.dumps(
+                [
+                    {
+                        "field": "ad.impressions",
+                        "operator": "GREATER_THAN",
+                        "value": 0,
+                    },
+                    {
+                        "field": "ad.effective_status",
+                        "operator": "IN",
+                        "value": [
+                            "ACTIVE",
+                            "PAUSED",
+                            "DELETED",
+                            "PENDING_REVIEW",
+                            "DISAPPROVED",
+                            "PREAPPROVED",
+                            "PENDING_BILLING_INFO",
+                            "CAMPAIGN_PAUSED",
+                            "ARCHIVED",
+                            "ADSET_PAUSED",
+                            "IN_PROCESS",
+                            "WITH_ISSUES",
+                        ],
+                    },
+                ]
+            ),
             "time_increment": 1,
             "time_range": json.dumps(
                 {
