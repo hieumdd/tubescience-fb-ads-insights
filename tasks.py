@@ -126,8 +126,8 @@ ACCOUNTS = [
 
 TASKS_CLIENT = tasks_v2.CloudTasksClient()
 CLOUD_TASKS_PATH = (
-    os.getenv("PROJECT_ID"),
-    os.getenv("REGION"),
+    os.getenv("PROJECT_ID", ''),
+    os.getenv("REGION", ''),
     "fb-ads-insights",
 )
 PARENT = TASKS_CLIENT.queue_path(*CLOUD_TASKS_PATH)
