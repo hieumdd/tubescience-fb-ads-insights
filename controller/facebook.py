@@ -16,7 +16,8 @@ DATASET = "Facebook"
 
 
 class AsyncFailedException(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(f"Async Job Failed: {message}")
 
 
 class InsightsFailedException(Exception):
@@ -25,6 +26,7 @@ class InsightsFailedException(Exception):
 
 ReportRunId = str
 ReportRunRes = tuple[Optional[Exception], Optional[ReportRunId]]
+ReportRunReq = Callable[[requests.Session, str, datetime, datetime], ReportRunRes]
 Insight = dict
 Insights = list[Insight]
 InsightsRes = tuple[Optional[Exception], Optional[Insights]]
@@ -32,9 +34,14 @@ InsightsRes = tuple[Optional[Exception], Optional[Insights]]
 
 def request_async_report(
     fields: list[str],
-    windows: list[str],
+    windows: list[str] = [
+        "1d_click",
+        "1d_view",
+        "7d_click",
+        "7d_view",
+    ],
     breakdowns: str = None,
-) -> Callable[[requests.Session, str, datetime, datetime], ReportRunRes,]:
+) -> ReportRunReq:
     def send(
         session: requests.Session,
         ads_account_id: str,
@@ -46,33 +53,33 @@ def request_async_report(
             "level": "ad",
             "fields": json.dumps(fields),
             "action_attribution_windows": json.dumps(windows),
-            "filtering": json.dumps(
-                [
-                    {
-                        "field": "ad.impressions",
-                        "operator": "GREATER_THAN",
-                        "value": 0,
-                    },
-                    {
-                        "field": "ad.effective_status",
-                        "operator": "IN",
-                        "value": [
-                            "ACTIVE",
-                            "PAUSED",
-                            "DELETED",
-                            "PENDING_REVIEW",
-                            "DISAPPROVED",
-                            "PREAPPROVED",
-                            "PENDING_BILLING_INFO",
-                            "CAMPAIGN_PAUSED",
-                            "ARCHIVED",
-                            "ADSET_PAUSED",
-                            "IN_PROCESS",
-                            "WITH_ISSUES",
-                        ],
-                    },
-                ]
-            ),
+            # "filtering": json.dumps(
+            #     [
+            #         {
+            #             "field": "ad.impressions",
+            #             "operator": "GREATER_THAN",
+            #             "value": 0,
+            #         },
+            #         {
+            #             "field": "ad.effective_status",
+            #             "operator": "IN",
+            #             "value": [
+            #                 "ACTIVE",
+            #                 "PAUSED",
+            #                 "DELETED",
+            #                 "PENDING_REVIEW",
+            #                 "DISAPPROVED",
+            #                 "PREAPPROVED",
+            #                 "PENDING_BILLING_INFO",
+            #                 "CAMPAIGN_PAUSED",
+            #                 "ARCHIVED",
+            #                 "ADSET_PAUSED",
+            #                 "IN_PROCESS",
+            #                 "WITH_ISSUES",
+            #             ],
+            #         },
+            #     ]
+            # ),
             "time_increment": 1,
             "time_range": json.dumps(
                 {
@@ -88,6 +95,7 @@ def request_async_report(
                 f"{BASE_URL}/{ads_account_id}/insights", params=params
             ) as r:
                 res = r.json()
+            print("sent report request")
             return None, res["report_run_id"]
         except KeyError as e:
             return e, None
@@ -106,10 +114,12 @@ def poll_async_report(session: requests.Session, report_run_id: str) -> ReportRu
             res["async_percent_completion"] == 100
             and res["async_status"] == "Job Completed"
         ):
+            print("polled")
             return None, report_run_id
         elif res["async_status"] == "Job Failed":
             return AsyncFailedException(report_run_id), None
         else:
+            print("polling")
             time.sleep(10)
             return poll_async_report(session, report_run_id)
     except Exception as e:
@@ -118,10 +128,7 @@ def poll_async_report(session: requests.Session, report_run_id: str) -> ReportRu
 
 def get_async_report(
     session: requests.Session,
-    requester: Callable[
-        [requests.Session, str, datetime, datetime],
-        ReportRunRes,
-    ],
+    requester: ReportRunReq,
     ads_account_id: str,
     start: datetime,
     end: datetime,
@@ -130,6 +137,7 @@ def get_async_report(
     if not err_request and request:
         err_polled_request, polled_request = poll_async_report(session, request)
         if err_polled_request and isinstance(err_polled_request, AsyncFailedException):
+            print(err_polled_request)
             return get_async_report(session, requester, ads_account_id, start, end)
         else:
             return err_polled_request, polled_request
@@ -140,9 +148,8 @@ def get_async_report(
 def get_insights(
     session: requests.Session,
     report_run_id: ReportRunId,
-    after: str = None,
 ) -> InsightsRes:
-    def get() -> list[dict]:
+    def get(after: str = None) -> list[dict]:
         with session.get(
             f"{BASE_URL}/{report_run_id}/insights",
             params={
@@ -154,12 +161,7 @@ def get_insights(
             res = r.json()
         data = res["data"]
         next_ = res["paging"].get("next")
-        return (
-            data
-            + get_insights(session, report_run_id, res["paging"]["cursors"]["after"])
-            if next_
-            else data
-        )
+        return data + get(res["paging"]["cursors"]["after"]) if next_ else data
 
     try:
         return None, get()
@@ -167,8 +169,11 @@ def get_insights(
         return e, None
 
 
-def transform_add_batched_at(row: Insight):
-    return {
-        **row,
-        "_batched_at": NOW.isoformat(timespec="seconds"),
-    }
+def transform_add_batched_at(rows: Insights):
+    return [
+        {
+            **row,
+            "_batched_at": NOW.isoformat(timespec="seconds"),
+        }
+        for row in rows
+    ]

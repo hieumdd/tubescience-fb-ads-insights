@@ -1,3 +1,4 @@
+import importlib
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -5,16 +6,24 @@ import requests
 from google.cloud import bigquery
 
 from controller.facebook import get_async_report, get_insights, transform_add_batched_at
-from controller.bigquery import load
+from models.AdsInsights import FBAdsInsights
 
 NOW = datetime.utcnow()
 DATE_FORMAT = "%Y-%m-%d"
 
 
+def factory(table):
+    try:
+        module = importlib.import_module(f"models.AdsInsights")
+        return getattr(module, table)
+    except (ImportError, AttributeError):
+        raise ValueError(table)
+
+
 def run(
     client: bigquery.Client,
     session: requests.Session,
-    model,
+    model: FBAdsInsights,
     ads_account_id: str,
     start: Optional[str],
     end: Optional[str],
@@ -27,7 +36,7 @@ def run(
     _end = NOW if not end else datetime.strptime(end, DATE_FORMAT)
     err_report_id, report_id = get_async_report(
         session,
-        model["requester"],
+        model["request"],
         ads_account_id,
         _start,
         _end,
@@ -40,12 +49,10 @@ def run(
                 "start": start,
                 "end": end,
                 "num_processed": len(data),
-                "output_rows": load(
+                "output_rows": model["load"](
+                    model["name"],
                     client,
                     transform_add_batched_at(model["transform"](data)),
-                    model["table"],
-                    model["schema"],
-                    model["keys"],
                 ),
             }
         if err_data:
