@@ -6,7 +6,7 @@ from main import main
 from tasks import ACCOUNTS, TABLES
 
 START = "2021-10-01"
-END = "2021-11-10"
+END = "2021-10-15"
 
 
 def run(data):
@@ -26,12 +26,12 @@ def run(data):
 @pytest.mark.parametrize(
     ("start", "end"),
     [
-        (None, None),
-        # (START, END),
+        # (None, None),
+        (START, END),
     ],
     ids=[
-        "auto",
-        # "manual",
+        # "auto",
+        "manual",
     ],
 )
 def test_pipelines(table, ads_account_id, start, end):
