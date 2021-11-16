@@ -3,10 +3,10 @@ from unittest.mock import Mock
 import pytest
 
 from main import main
-from tasks import ACCOUNTS, TABLES
+from controller.tasks import ACCOUNTS, TABLES
 
 START = "2021-10-01"
-END = "2021-10-15"
+END = "2021-11-01"
 
 
 def run(data):

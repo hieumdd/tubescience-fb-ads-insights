@@ -4,6 +4,8 @@ import uuid
 
 from google.cloud import tasks_v2
 
+TASKS_CLIENT = tasks_v2.CloudTasksClient()
+
 TABLES = [
     "AdsInsights",
     "VideoInsights",
@@ -124,27 +126,20 @@ ACCOUNTS = [
     "act_769603890495531",
 ]
 
-TASKS_CLIENT = tasks_v2.CloudTasksClient()
 CLOUD_TASKS_PATH = (
-    os.getenv("PROJECT_ID", ''),
-    os.getenv("REGION", ''),
+    os.getenv("PROJECT_ID", ""),
+    "us-central1",
     "fb-ads-insights",
 )
 PARENT = TASKS_CLIENT.queue_path(*CLOUD_TASKS_PATH)
 
 
-def create_tasks(tasks_data):
-    """Create tasks and put into queue
-    Args:
-        tasks_data (dict): Task request
-    Returns:
-        dict: Job Response
-    """
-
+def create_tasks(tasks_data: dict) -> dict:
     payloads = [
         {
             "name": f"{account}-{uuid.uuid4()}",
             "payload": {
+                "table": tasks_data["table"],
                 "ads_account_id": account,
                 "start": tasks_data.get("start"),
                 "end": tasks_data.get("end"),
@@ -154,10 +149,13 @@ def create_tasks(tasks_data):
     ]
     tasks = [
         {
-            "name": TASKS_CLIENT.task_path(*CLOUD_TASKS_PATH, task=payload["name"]),
+            "name": TASKS_CLIENT.task_path(
+                *CLOUD_TASKS_PATH,
+                task=str(payload["name"]),
+            ),
             "http_request": {
                 "http_method": tasks_v2.HttpMethod.POST,
-                "url": f"https://{os.getenv('REGION')}-{os.getenv('PROJECT_ID')}.cloudfunctions.net/{os.getenv('FUNCTION_NAME')}",
+                "url": os.getenv("PUBLIC_URL"),
                 "oidc_token": {
                     "service_account_email": os.getenv("GCP_SA"),
                 },
