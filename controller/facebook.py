@@ -44,8 +44,6 @@ def request_async_report(
                 "1d_view",
                 "7d_click",
                 "7d_view",
-                "28d_click",
-                "28d_view",
             ]
         ),
         "filtering": json.dumps(
@@ -106,7 +104,7 @@ def poll_async_report(
     elif res["async_status"] == "Job Failed":
         raise AsyncFailedException(report_run_id)
     else:
-        time.sleep(1)
+        time.sleep(5)
         return poll_async_report(session, report_run_id)
 
 
