@@ -6,10 +6,11 @@ on:
 
 env:
   FUNCTION_NAME: tubescience_fb_ads_insights
-  REGION: us-central1
+  PROJECT_ID: tubescience-sm
+  PUBLIC_URL: https://us-central1-tubescience-sm.cloudfunctions.net/tubescience_fb_ads_insights
 
 jobs:
-  setup:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,11 +26,11 @@ jobs:
         run: >-
           gcloud functions deploy ${{ env.FUNCTION_NAME }}
           --entry-point=main
-          --region=${{ env.REGION }}
+          --region=us-central1
           --timeout=530
-          --project=${{ secrets.PROJECT_ID }}
+          --project=${{ env.PROJECT_ID }}
           --memory=1024
           --runtime=python39
           --trigger-http
           --service-account=${{ secrets.GCP_SA }}
-          --set-env-vars=ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }},REGION=${{ env.REGION }},FUNCTION_NAME=${{ env.FUNCTION_NAME }},GCP_SA=${{ secrets.GCP_SA }},PROJECT_ID=${{ secrets.PROJECT_ID }}
+          --set-env-vars=ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }},PUBLIC_URL=${{ env.PUBLIC_URL }}

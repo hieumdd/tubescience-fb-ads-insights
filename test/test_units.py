@@ -3,18 +3,20 @@ from unittest.mock import Mock
 import pytest
 
 from main import main
-from tasks import ACCOUNTS
+from controller.tasks import ACCOUNTS, TABLES
 
-START = "2021-09-01"
-END = "2021-09-25"
+START = "2021-11-01"
+END = "2021-11-17"
 
 
 def run(data):
-    req = Mock(get_json=Mock(return_value=data), args=data)
-    res = main(req)
-    return res
+    return main(Mock(get_json=Mock(return_value=data), args=data))
 
 
+@pytest.mark.parametrize(
+    "table",
+    TABLES,
+)
 @pytest.mark.parametrize(
     "ads_account_id",
     ACCOUNTS,
@@ -22,17 +24,18 @@ def run(data):
 @pytest.mark.parametrize(
     ("start", "end"),
     [
-        (None, None),
+        # (None, None),
         (START, END),
     ],
     ids=[
-        "auto",
+        # "auto",
         "manual",
     ],
 )
-def test_pipelines(ads_account_id, start, end):
+def test_pipelines(table, ads_account_id, start, end):
     res = run(
         {
+            "table": table,
             "ads_account_id": ads_account_id,
             "start": start,
             "end": end,
@@ -42,7 +45,10 @@ def test_pipelines(ads_account_id, start, end):
     if res["num_processed"] > 0:
         assert res["output_rows"] == res["num_processed"]
 
-
+@pytest.mark.parametrize(
+    "table",
+    TABLES,
+)
 @pytest.mark.parametrize(
     ("start", "end"),
     [
@@ -54,10 +60,11 @@ def test_pipelines(ads_account_id, start, end):
         "manual",
     ],
 )
-def test_tasks(start, end):
+def test_tasks(table, start, end):
     res = run(
         {
             "task": "fb",
+            "table": table,
             "start": start,
             "end": end,
         }

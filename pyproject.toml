@@ -8,20 +8,23 @@ authors = ["HM <hieumdd@gmail.com>"]
 python = "~3.9"
 requests = "^2.26.0"
 google-cloud-bigquery = "^2.27.1"
-aiohttp = "^3.7.4"
 google-cloud-tasks = "^2.5.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-timeout = "^1.4.2"
 black = "^21.9b0"
+pytest-xdist = "^2.4.0"
+mypy = "^0.910"
+types-requests = "^2.26.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "-s --durations=0"
+# addopts = "-s --durations=0"
+addopts = "-s --durations=0 -n12"
 timeout = 530
 testpaths = [
     "test",
