@@ -3,7 +3,9 @@ import json
 import uuid
 
 from google.cloud import tasks_v2
+from google import auth
 
+SERVICE_ACCOUNT, PROJECT_ID = auth.default()
 TASKS_CLIENT = tasks_v2.CloudTasksClient()
 
 TABLES = [
@@ -130,13 +132,11 @@ ACCOUNTS = [
     "act_645849039360383",
     "act_1357916894374051",
     "act_10153034389398220",
+    # Nov 17
+    "act_780837282692243",
 ]
 
-CLOUD_TASKS_PATH = (
-    os.getenv("PROJECT_ID", ""),
-    "us-central1",
-    "fb-ads-insights",
-)
+CLOUD_TASKS_PATH = (PROJECT_ID, "us-central1", "fb-ads-insights")
 PARENT = TASKS_CLIENT.queue_path(*CLOUD_TASKS_PATH)
 
 
@@ -163,26 +163,25 @@ def create_tasks(tasks_data: dict) -> dict:
                 "http_method": tasks_v2.HttpMethod.POST,
                 "url": os.getenv("PUBLIC_URL"),
                 "oidc_token": {
-                    "service_account_email": os.getenv("GCP_SA"),
+                    "service_account_email": SERVICE_ACCOUNT.service_account_email,
                 },
-                "headers": {
-                    "Content-type": "application/json",
-                },
+                "headers": {"Content-type": "application/json"},
                 "body": json.dumps(payload["payload"]).encode(),
             },
         }
         for payload in payloads
     ]
-    responses = [
-        TASKS_CLIENT.create_task(
-            request={
-                "parent": PARENT,
-                "task": task,
-            }
-        )
-        for task in tasks
-    ]
     return {
-        "tasks": len(responses),
+        "tasks": len(
+            [
+                TASKS_CLIENT.create_task(
+                    request={
+                        "parent": PARENT,
+                        "task": task,
+                    }
+                )
+                for task in tasks
+            ]
+        ),
         "tasks_data": tasks_data,
     }
