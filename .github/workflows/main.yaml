@@ -7,6 +7,7 @@ on:
 env:
   FUNCTION_NAME: tubescience_fb_ads_insights
   PROJECT_ID: tubescience-sm
+  GCP_SA: etl-713@tubescience-sm.iam.gserviceaccount.com
   PUBLIC_URL: https://us-central1-tubescience-sm.cloudfunctions.net/tubescience_fb_ads_insights
 
 jobs:
@@ -32,5 +33,5 @@ jobs:
           --memory=1024
           --runtime=python39
           --trigger-http
-          --service-account=${{ secrets.GCP_SA }}
-          --set-env-vars=ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }},PUBLIC_URL=${{ env.PUBLIC_URL }}
+          --service-account=${{ env.GCP_SA }}
+          --set-env-vars=ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }},PUBLIC_URL=${{ env.PUBLIC_URL }},GCP_SA=${{ env.GCP_SA }}
