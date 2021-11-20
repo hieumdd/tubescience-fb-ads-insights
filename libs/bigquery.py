@@ -1,7 +1,6 @@
 import time
 
 from google.cloud import bigquery
-from google.cloud.exceptions import GoogleAPICallError
 
 from models.AdsInsights.base import FBAdsInsights
 
@@ -29,7 +28,7 @@ def load(
         )
         update(client, dataset, model)
         return output_rows
-    except GoogleAPICallError as e:
+    except Exception as e:
         if attempt < 10:
             time.sleep(10)
             return load(client, model, dataset, rows, attempt + 1)
