@@ -1,3 +1,4 @@
+import os
 import importlib
 from datetime import datetime, timedelta
 from typing import Optional
@@ -61,7 +62,8 @@ def run(
         response["output_rows"] = load(
             BQ_CLIENT,
             model,
-            "Facebook",
+            os.getenv("DATASET", "Facebook_dev"),
+            ads_account_id,
             transform_add_batched_at(model["transform"](data)),
         )
     return response

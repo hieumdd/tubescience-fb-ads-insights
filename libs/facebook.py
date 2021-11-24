@@ -83,13 +83,14 @@ def request_async_report(
     }
     if model.get("breakdowns", ""):
         params["breakdowns"] = model["breakdowns"]
-    with session.post(f"{BASE_URL}/{ads_account_id}/insights", params=params) as r:
+    with session.post(f"{BASE_URL}/act_{ads_account_id}/insights", params=params) as r:
         res = r.json()
     return res["report_run_id"]
 
 
 def poll_async_report(
-    session: requests.Session, report_run_id: ReportRunId
+    session: requests.Session,
+    report_run_id: ReportRunId,
 ) -> ReportRunId:
     with session.get(
         f"{BASE_URL}/{report_run_id}",
