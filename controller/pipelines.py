@@ -9,7 +9,6 @@ from libs.facebook import Insights, get
 from libs.bigquery import load
 from models.AdsInsights.base import FBAdsInsights
 
-NOW = datetime.utcnow()
 DATE_FORMAT = "%Y-%m-%d"
 
 SESSION = requests.Session()
@@ -28,7 +27,7 @@ def transform_add_batched_at(rows: Insights) -> Insights:
     return [
         {
             **row,
-            "_batched_at": NOW.isoformat(timespec="seconds"),
+            "_batched_at": datetime.utcnow().isoformat(timespec="seconds"),
         }
         for row in rows
     ]
@@ -39,10 +38,10 @@ def get_time_range(
     end: Optional[str],
 ) -> tuple[datetime, datetime]:
     return (
-        (NOW - timedelta(days=8))
+        (datetime.utcnow() - timedelta(days=8))
         if not start
         else datetime.strptime(start, DATE_FORMAT)
-    ), NOW if not end else datetime.strptime(end, DATE_FORMAT)
+    ), datetime.utcnow() if not end else datetime.strptime(end, DATE_FORMAT)
 
 
 def run(
