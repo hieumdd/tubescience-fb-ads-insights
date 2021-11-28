@@ -1,11 +1,9 @@
-from libs.facebook import request_async_report
-from libs.bigquery import load
 from models.AdsInsights.base import ads_insights_pipeline
 
 AgeGenderInsights = ads_insights_pipeline(
-    async_request=request_async_report(
-        level="account",
-        fields=[
+    request_options={
+        "level": "account",
+        "fields": [
             "date_start",
             "date_stop",
             "account_id",
@@ -21,8 +19,8 @@ AgeGenderInsights = ads_insights_pipeline(
             "cost_per_action_type",
             "cost_per_unique_action_type",
         ],
-        breakdowns="age,gender",
-    ),
+        "breakdowns": "age,gender",
+    },
     transform=lambda rows: [
         {
             "account_id": row["account_id"],
@@ -92,9 +90,9 @@ AgeGenderInsights = ads_insights_pipeline(
         }
         for row in rows
     ],
-    load=load(
-        name="AgeGenderInsights",
-        schema=[
+    load_options={
+        "name": "AgeGenderInsights",
+        "schema": [
             {"name": "account_id", "type": "NUMERIC"},
             {"name": "date_start", "type": "DATE"},
             {"name": "date_stop", "type": "DATE"},
@@ -161,12 +159,12 @@ AgeGenderInsights = ads_insights_pipeline(
             },
             {"name": "_batched_at", "type": "TIMESTAMP"},
         ],
-        p_key=[
+        "p_key": [
             "date_start",
             "date_stop",
             "account_id",
             "age",
             "gender",
         ],
-    ),
+    },
 )

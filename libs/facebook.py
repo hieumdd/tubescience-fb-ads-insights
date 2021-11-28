@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, TypedDict
 import os
 import json
 from datetime import datetime
@@ -18,79 +18,79 @@ class AsyncFailedException(Exception):
         super().__init__(f"Async Job Failed: {message}")
 
 
+class RequestOptions(TypedDict):
+    level: str
+    fields: list[str]
+    breakdowns: Optional[str]
+
+
 ReportRunId = str
 Insights = list[dict]
 AsyncRequest = Callable[[requests.Session, str, datetime, datetime], ReportRunId]
 
 
-def request_async_report(
-    level: str,
-    fields: list[str],
-    breakdowns: Optional[str] = None,
-) -> AsyncRequest:
-    def request(
-        session: requests.Session,
-        ads_account_id: str,
-        start: datetime,
-        end: datetime,
-    ) -> ReportRunId:
-        params = {
-            "access_token": os.getenv("ACCESS_TOKEN"),
-            "level": level,
-            "fields": json.dumps(fields),
-            "action_attribution_windows": json.dumps(
-                [
-                    "1d_click",
-                    "1d_view",
-                    "7d_click",
-                    "7d_view",
-                ]
-            ),
-            "filtering": json.dumps(
-                [
-                    {
-                        "field": "ad.impressions",
-                        "operator": "GREATER_THAN",
-                        "value": 0,
-                    },
-                    {
-                        "field": "ad.effective_status",
-                        "operator": "IN",
-                        "value": [
-                            "ACTIVE",
-                            "PAUSED",
-                            "DELETED",
-                            "PENDING_REVIEW",
-                            "DISAPPROVED",
-                            "PREAPPROVED",
-                            "PENDING_BILLING_INFO",
-                            "CAMPAIGN_PAUSED",
-                            "ARCHIVED",
-                            "ADSET_PAUSED",
-                            "IN_PROCESS",
-                            "WITH_ISSUES",
-                        ],
-                    },
-                ]
-            ),
-            "time_increment": 1,
-            "time_range": json.dumps(
+def _request_async_report(
+    request_options: RequestOptions,
+    session: requests.Session,
+    ads_account_id: str,
+    start: datetime,
+    end: datetime,
+) -> ReportRunId:
+    params = {
+        "access_token": os.getenv("ACCESS_TOKEN"),
+        "level": request_options["level"],
+        "fields": json.dumps(request_options["fields"]),
+        "action_attribution_windows": json.dumps(
+            [
+                "1d_click",
+                "1d_view",
+                "7d_click",
+                "7d_view",
+            ]
+        ),
+        "filtering": json.dumps(
+            [
                 {
-                    "since": start.strftime(DATE_FORMAT),
-                    "until": end.strftime(DATE_FORMAT),
-                }
-            ),
-        }
-        if breakdowns:
-            params["breakdowns"] = breakdowns
-        with session.post(
-            f"{BASE_URL}/act_{ads_account_id}/insights",
-            params=params,
-        ) as r:
-            res = r.json()
-        return res["report_run_id"]
-
-    return request
+                    "field": "ad.impressions",
+                    "operator": "GREATER_THAN",
+                    "value": 0,
+                },
+                {
+                    "field": "ad.effective_status",
+                    "operator": "IN",
+                    "value": [
+                        "ACTIVE",
+                        "PAUSED",
+                        "DELETED",
+                        "PENDING_REVIEW",
+                        "DISAPPROVED",
+                        "PREAPPROVED",
+                        "PENDING_BILLING_INFO",
+                        "CAMPAIGN_PAUSED",
+                        "ARCHIVED",
+                        "ADSET_PAUSED",
+                        "IN_PROCESS",
+                        "WITH_ISSUES",
+                    ],
+                },
+            ]
+        ),
+        "time_increment": 1,
+        "time_range": json.dumps(
+            {
+                "since": start.strftime(DATE_FORMAT),
+                "until": end.strftime(DATE_FORMAT),
+            }
+        ),
+    }
+    if request_options.get("breakdowns"):
+        params["breakdowns"] = request_options["breakdowns"]
+    with session.post(
+        f"{BASE_URL}/act_{ads_account_id}/insights",
+        params=params,
+    ) as r:
+        res = r.json()
+    return res["report_run_id"]
 
 
 def _poll_async_report(
@@ -115,14 +115,15 @@ def _poll_async_report(
 
 
 def _get_async_report(
-    async_request: AsyncRequest,
+    request_options: RequestOptions,
     session: requests.Session,
     ads_account_id: str,
     start: datetime,
     end: datetime,
     attempt: int = 0,
 ) -> ReportRunId:
-    report_run_id = async_request(
+    report_run_id = _request_async_report(
+        request_options,
         session,
         ads_account_id,
         start,
@@ -133,7 +134,7 @@ def _get_async_report(
     except AsyncFailedException as e:
         if attempt < 5:
             return _get_async_report(
-                async_request,
+                request_options,
                 session,
                 ads_account_id,
                 start,
@@ -172,7 +173,7 @@ def _get_insights(
 
 
 def get(
-    async_request: AsyncRequest,
+    request_options: RequestOptions,
     ads_account_id: str,
     start: datetime,
     end: datetime,
@@ -181,7 +182,7 @@ def get(
         return _get_insights(
             session,
             _get_async_report(
-                async_request,
+                request_options,
                 session,
                 ads_account_id,
                 start,

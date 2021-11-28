@@ -1,11 +1,9 @@
-from libs.facebook import request_async_report
-from libs.bigquery import load
 from models.AdsInsights.base import ads_insights_pipeline
 
 RegionInsights = ads_insights_pipeline(
-    async_request=request_async_report(
-        level="account",
-        fields=[
+    request_options={
+        "level": "account",
+        "fields": [
             "date_start",
             "date_stop",
             "account_id",
@@ -20,8 +18,8 @@ RegionInsights = ads_insights_pipeline(
             "action_values",
             "cost_per_action_type",
         ],
-        breakdowns="region",
-    ),
+        "breakdowns": "region",
+    },
     transform=lambda rows: [
         {
             "account_id": row["account_id"],
@@ -89,79 +87,79 @@ RegionInsights = ads_insights_pipeline(
         }
         for row in rows
     ],
-    load=load(
-        name="RegionInsights",
-        schema=[
-        {"name": "account_id", "type": "INTEGER"},
-        {"name": "date_start", "type": "DATE"},
-        {"name": "date_stop", "type": "DATE"},
-        {"name": "region", "type": "STRING"},
-        {"name": "reach", "type": "INTEGER"},
-        {"name": "impressions", "type": "INTEGER"},
-        {"name": "cpc", "type": "FLOAT"},
-        {"name": "cpm", "type": "FLOAT"},
-        {"name": "ctr", "type": "FLOAT"},
-        {"name": "clicks", "type": "INTEGER"},
-        {"name": "spend", "type": "FLOAT"},
-        {
-            "name": "actions",
-            "type": "record",
-            "mode": "repeated",
-            "fields": [
-                {"name": "action_type", "type": "STRING"},
-                {"name": "value", "type": "FLOAT"},
-                {"name": "_1d_view", "type": "FLOAT"},
-                {"name": "_1d_click", "type": "FLOAT"},
-                {"name": "_7d_view", "type": "FLOAT"},
-                {"name": "_7d_click", "type": "FLOAT"},
-            ],
-        },
-        {
-            "name": "action_values",
-            "type": "record",
-            "mode": "repeated",
-            "fields": [
-                {"name": "action_type", "type": "STRING"},
-                {"name": "value", "type": "FLOAT"},
-                {"name": "_1d_view", "type": "FLOAT"},
-                {"name": "_1d_click", "type": "FLOAT"},
-                {"name": "_7d_view", "type": "FLOAT"},
-                {"name": "_7d_click", "type": "FLOAT"},
-            ],
-        },
-        {
-            "name": "cost_per_action_type",
-            "type": "record",
-            "mode": "repeated",
-            "fields": [
-                {"name": "action_type", "type": "STRING"},
-                {"name": "value", "type": "FLOAT"},
-                {"name": "_1d_view", "type": "FLOAT"},
-                {"name": "_1d_click", "type": "FLOAT"},
-                {"name": "_7d_view", "type": "FLOAT"},
-                {"name": "_7d_click", "type": "FLOAT"},
-            ],
-        },
-        {
-            "name": "cost_per_unique_action_type",
-            "type": "record",
-            "mode": "repeated",
-            "fields": [
-                {"name": "action_type", "type": "STRING"},
-                {"name": "value", "type": "FLOAT"},
-                {"name": "_1d_view", "type": "FLOAT"},
-                {"name": "_1d_click", "type": "FLOAT"},
-                {"name": "_7d_view", "type": "FLOAT"},
-                {"name": "_7d_click", "type": "FLOAT"},
-            ],
-        },
-        {"name": "_batched_at", "type": "TIMESTAMP"},
-    ],
-        p_key=[
+    load_options={
+        "name": "RegionInsights",
+        "schema": [
+            {"name": "account_id", "type": "INTEGER"},
+            {"name": "date_start", "type": "DATE"},
+            {"name": "date_stop", "type": "DATE"},
+            {"name": "region", "type": "STRING"},
+            {"name": "reach", "type": "INTEGER"},
+            {"name": "impressions", "type": "INTEGER"},
+            {"name": "cpc", "type": "FLOAT"},
+            {"name": "cpm", "type": "FLOAT"},
+            {"name": "ctr", "type": "FLOAT"},
+            {"name": "clicks", "type": "INTEGER"},
+            {"name": "spend", "type": "FLOAT"},
+            {
+                "name": "actions",
+                "type": "record",
+                "mode": "repeated",
+                "fields": [
+                    {"name": "action_type", "type": "STRING"},
+                    {"name": "value", "type": "FLOAT"},
+                    {"name": "_1d_view", "type": "FLOAT"},
+                    {"name": "_1d_click", "type": "FLOAT"},
+                    {"name": "_7d_view", "type": "FLOAT"},
+                    {"name": "_7d_click", "type": "FLOAT"},
+                ],
+            },
+            {
+                "name": "action_values",
+                "type": "record",
+                "mode": "repeated",
+                "fields": [
+                    {"name": "action_type", "type": "STRING"},
+                    {"name": "value", "type": "FLOAT"},
+                    {"name": "_1d_view", "type": "FLOAT"},
+                    {"name": "_1d_click", "type": "FLOAT"},
+                    {"name": "_7d_view", "type": "FLOAT"},
+                    {"name": "_7d_click", "type": "FLOAT"},
+                ],
+            },
+            {
+                "name": "cost_per_action_type",
+                "type": "record",
+                "mode": "repeated",
+                "fields": [
+                    {"name": "action_type", "type": "STRING"},
+                    {"name": "value", "type": "FLOAT"},
+                    {"name": "_1d_view", "type": "FLOAT"},
+                    {"name": "_1d_click", "type": "FLOAT"},
+                    {"name": "_7d_view", "type": "FLOAT"},
+                    {"name": "_7d_click", "type": "FLOAT"},
+                ],
+            },
+            {
+                "name": "cost_per_unique_action_type",
+                "type": "record",
+                "mode": "repeated",
+                "fields": [
+                    {"name": "action_type", "type": "STRING"},
+                    {"name": "value", "type": "FLOAT"},
+                    {"name": "_1d_view", "type": "FLOAT"},
+                    {"name": "_1d_click", "type": "FLOAT"},
+                    {"name": "_7d_view", "type": "FLOAT"},
+                    {"name": "_7d_click", "type": "FLOAT"},
+                ],
+            },
+            {"name": "_batched_at", "type": "TIMESTAMP"},
+        ],
+        "p_key": [
             "date_start",
             "account_id",
             "date_stop",
             "region",
         ],
-    ),
+    },
 )

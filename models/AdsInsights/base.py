@@ -3,8 +3,8 @@ import os
 from datetime import datetime, timedelta
 
 
-from libs.facebook import Insights, AsyncRequest, get
-from libs.bigquery import Load
+from libs.facebook import Insights, AsyncRequest, RequestOptions, get
+from libs.bigquery import LoadOptions, load
 
 AdsInsightsPipeline = Callable[[str, Optional[str], Optional[str]], dict]
 
@@ -33,12 +33,12 @@ def get_time_range(
 
 
 def ads_insights_pipeline(
-    async_request: AsyncRequest,
+    request_options: RequestOptions,
     transform: Callable[[list[dict]], list[dict]],
-    load: Load,
+    load_options: LoadOptions,
 ) -> AdsInsightsPipeline:
     def run(ads_account_id: str, start: Optional[str], end: Optional[str]) -> dict:
-        data = get(async_request, ads_account_id, *get_time_range(start, end))
+        data = get(request_options, ads_account_id, *get_time_range(start, end))
         response = {
             "ads_account_id": ads_account_id,
             "start": start,
@@ -47,6 +47,7 @@ def ads_insights_pipeline(
         }
         if len(data) > 0:
             response["output_rows"] = load(
+                load_options,
                 os.getenv("DATASET", "Facebook_dev"),
                 ads_account_id,
                 transform_add_batched_at(transform(data)),

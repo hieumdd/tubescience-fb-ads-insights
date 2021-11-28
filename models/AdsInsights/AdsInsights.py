@@ -1,11 +1,9 @@
-from libs.facebook import request_async_report
-from libs.bigquery import load
 from models.AdsInsights.base import ads_insights_pipeline
 
 AdsInsights = ads_insights_pipeline(
-    async_request=request_async_report(
-        level="ad",
-        fields=[
+    request_options={
+        "level": "ad",
+        "fields": [
             "date_start",
             "date_stop",
             "account_id",
@@ -30,7 +28,7 @@ AdsInsights = ads_insights_pipeline(
             "video_thruplay_watched_actions",
             "video_play_actions",
         ],
-    ),
+    },
     transform=lambda rows: [
         {
             "account_id": row["account_id"],
@@ -179,9 +177,9 @@ AdsInsights = ads_insights_pipeline(
         }
         for row in rows
     ],
-    load=load(
-        name="AdsInsights",
-        schema=[
+    load_options={
+        "name": "AdsInsights",
+        "schema": [
             {"name": "account_id", "type": "NUMERIC"},
             {"name": "date_start", "type": "DATE"},
             {"name": "date_stop", "type": "DATE"},
@@ -327,7 +325,7 @@ AdsInsights = ads_insights_pipeline(
             },
             {"name": "_batched_at", "type": "TIMESTAMP"},
         ],
-        p_key=[
+        "p_key": [
             "date_start",
             "date_stop",
             "account_id",
@@ -335,5 +333,5 @@ AdsInsights = ads_insights_pipeline(
             "adset_id",
             "ad_id",
         ],
-    ),
+    },
 )
