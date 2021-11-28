@@ -1,11 +1,10 @@
+from typing import Callable, Optional
 import os
 import json
 from datetime import datetime
 import time
 
 import requests
-
-from models.AdsInsights.base import FBAdsInsights
 
 NOW = datetime.utcnow()
 DATE_FORMAT = "%Y-%m-%d"
@@ -21,70 +20,80 @@ class AsyncFailedException(Exception):
 
 ReportRunId = str
 Insights = list[dict]
+AsyncRequest = Callable[[requests.Session, str, datetime, datetime], ReportRunId]
 
 
 def request_async_report(
-    session: requests.Session,
-    model: FBAdsInsights,
-    ads_account_id: str,
-    start: datetime,
-    end: datetime,
-) -> ReportRunId:
-    params = {
-        "access_token": os.getenv("ACCESS_TOKEN"),
-        "level": model["level"],
-        "fields": json.dumps(model["fields"]),
-        "action_attribution_windows": json.dumps(
-            [
-                "1d_click",
-                "1d_view",
-                "7d_click",
-                "7d_view",
-            ]
-        ),
-        "filtering": json.dumps(
-            [
+    level: str,
+    fields: list[str],
+    breakdowns: Optional[str] = None,
+) -> AsyncRequest:
+    def request(
+        session: requests.Session,
+        ads_account_id: str,
+        start: datetime,
+        end: datetime,
+    ) -> ReportRunId:
+        params = {
+            "access_token": os.getenv("ACCESS_TOKEN"),
+            "level": level,
+            "fields": json.dumps(fields),
+            "action_attribution_windows": json.dumps(
+                [
+                    "1d_click",
+                    "1d_view",
+                    "7d_click",
+                    "7d_view",
+                ]
+            ),
+            "filtering": json.dumps(
+                [
+                    {
+                        "field": "ad.impressions",
+                        "operator": "GREATER_THAN",
+                        "value": 0,
+                    },
+                    {
+                        "field": "ad.effective_status",
+                        "operator": "IN",
+                        "value": [
+                            "ACTIVE",
+                            "PAUSED",
+                            "DELETED",
+                            "PENDING_REVIEW",
+                            "DISAPPROVED",
+                            "PREAPPROVED",
+                            "PENDING_BILLING_INFO",
+                            "CAMPAIGN_PAUSED",
+                            "ARCHIVED",
+                            "ADSET_PAUSED",
+                            "IN_PROCESS",
+                            "WITH_ISSUES",
+                        ],
+                    },
+                ]
+            ),
+            "time_increment": 1,
+            "time_range": json.dumps(
                 {
-                    "field": "ad.impressions",
-                    "operator": "GREATER_THAN",
-                    "value": 0,
-                },
-                {
-                    "field": "ad.effective_status",
-                    "operator": "IN",
-                    "value": [
-                        "ACTIVE",
-                        "PAUSED",
-                        "DELETED",
-                        "PENDING_REVIEW",
-                        "DISAPPROVED",
-                        "PREAPPROVED",
-                        "PENDING_BILLING_INFO",
-                        "CAMPAIGN_PAUSED",
-                        "ARCHIVED",
-                        "ADSET_PAUSED",
-                        "IN_PROCESS",
-                        "WITH_ISSUES",
-                    ],
-                },
-            ]
-        ),
-        "time_increment": 1,
-        "time_range": json.dumps(
-            {
-                "since": start.strftime(DATE_FORMAT),
-                "until": end.strftime(DATE_FORMAT),
-            }
-        ),
-    }
-    if model.get("breakdowns", ""):
-        params["breakdowns"] = model["breakdowns"]
-    with session.post(f"{BASE_URL}/act_{ads_account_id}/insights", params=params) as r:
-        res = r.json()
-    return res["report_run_id"]
+                    "since": start.strftime(DATE_FORMAT),
+                    "until": end.strftime(DATE_FORMAT),
+                }
+            ),
+        }
+        if breakdowns:
+            params["breakdowns"] = breakdowns
+        with session.post(
+            f"{BASE_URL}/act_{ads_account_id}/insights",
+            params=params,
+        ) as r:
+            res = r.json()
+        return res["report_run_id"]
+
+    return request
 
 
-def poll_async_report(
+def _poll_async_report(
     session: requests.Session,
     report_run_id: ReportRunId,
 ) -> ReportRunId:
@@ -102,31 +111,30 @@ def poll_async_report(
         raise AsyncFailedException(report_run_id)
     else:
         time.sleep(5)
-        return poll_async_report(session, report_run_id)
+        return _poll_async_report(session, report_run_id)
 
 
-def get_async_report(
+def _get_async_report(
+    async_request: AsyncRequest,
     session: requests.Session,
-    model: FBAdsInsights,
     ads_account_id: str,
     start: datetime,
     end: datetime,
     attempt: int = 0,
 ) -> ReportRunId:
-    report_run_id = request_async_report(
+    report_run_id = async_request(
         session,
-        model,
         ads_account_id,
         start,
         end,
     )
     try:
-        return poll_async_report(session, report_run_id)
+        return _poll_async_report(session, report_run_id)
     except AsyncFailedException as e:
         if attempt < 5:
-            return get_async_report(
+            return _get_async_report(
+                async_request,
                 session,
-                model,
                 ads_account_id,
                 start,
                 end,
@@ -136,7 +144,7 @@ def get_async_report(
             raise e
 
 
-def get_insights(
+def _get_insights(
     session: requests.Session,
     report_run_id: ReportRunId,
     after: str = None,
@@ -155,26 +163,26 @@ def get_insights(
         next_ = res["paging"].get("next")
         return (
             data
-            + get_insights(session, report_run_id, res["paging"]["cursors"]["after"])
+            + _get_insights(session, report_run_id, res["paging"]["cursors"]["after"])
             if next_
             else data
         )
     except KeyError:
-        return get_insights(session, report_run_id, after)
+        return _get_insights(session, report_run_id, after)
 
 
 def get(
-    model: FBAdsInsights,
+    async_request: AsyncRequest,
     ads_account_id: str,
     start: datetime,
     end: datetime,
 ) -> Insights:
     with requests.Session() as session:
-        return get_insights(
+        return _get_insights(
             session,
-            get_async_report(
+            _get_async_report(
+                async_request,
                 session,
-                model,
                 ads_account_id,
                 start,
                 end,

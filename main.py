@@ -9,12 +9,7 @@ def main(request):
     if "task" in data:
         response = create_tasks(data)
     elif "table" in data and "ads_account_id" in data:
-        response = run(
-            factory(data["table"]),
-            data["ads_account_id"],
-            data.get("start"),
-            data.get("end"),
-        )
+        response = run(factory(data["table"]), data)
     else:
         raise ValueError(data)
 
