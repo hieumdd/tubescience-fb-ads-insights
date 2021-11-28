@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timedelta
 
 
-from libs.facebook import Insights, AsyncRequest, RequestOptions, get
+from libs.facebook import Insights, RequestOptions, get
 from libs.bigquery import LoadOptions, load
 
 AdsInsightsPipeline = Callable[[str, Optional[str], Optional[str]], dict]
