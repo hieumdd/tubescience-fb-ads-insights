@@ -26,15 +26,15 @@ jobs:
       - name: Set env vars (dev)
         if: endsWith(github.ref, '/dev')
         run: |
-          echo "FUNCTION_NAME=tubescience_fb_ads_insights_dev" >> $GITHUB_ENV
-          echo "PUBLIC_URL=https://us-central1-tubescience-sm.cloudfunctions.net/tubescience_fb_ads_insights_dev" >> $GITHUB_ENV
+          echo "FUNCTION_NAME=tubescience-fb-ads-insights-dev" >> $GITHUB_ENV
+          echo "PUBLIC_URL=https://us-central1-tubescience-sm.cloudfunctions.net/tubescience-fb-ads-insights-dev" >> $GITHUB_ENV
           echo "DATASET=Facebook_dev" >> $GITHUB_ENV
 
       - name: Set env vars (prod)
         if: endsWith(github.ref, '/master')
         run: |
-          echo "FUNCTION_NAME=tubescience_fb_ads_insights" >> $GITHUB_ENV
-          echo "PUBLIC_URL=https://us-central1-tubescience-sm.cloudfunctions.net/tubescience_fb_ads_insights" >> $GITHUB_ENV
+          echo "FUNCTION_NAME=tubescience-fb-ads-insights" >> $GITHUB_ENV
+          echo "PUBLIC_URL=https://us-central1-tubescience-sm.cloudfunctions.net/tubescience-fb-ads-insights" >> $GITHUB_ENV
           echo "DATASET=Facebook" >> $GITHUB_ENV
 
       - name: Deploy to Cloud Functions
