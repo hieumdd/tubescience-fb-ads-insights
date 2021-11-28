@@ -26,7 +26,7 @@ def load(
             .result()
             .output_rows
         )
-        # update(client, dataset, model)
+        update(client, dataset, model)
         return output_rows
     except Exception as e:
         if attempt < 10:
