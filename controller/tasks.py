@@ -13,6 +13,7 @@ TABLES = [
     "VideoInsights",
     "AgeGenderInsights",
     "RegionInsights",
+    "DeviceInsights",
 ]
 
 ACCOUNTS = [
