@@ -1,4 +1,4 @@
-from typing import Callable, Optional, TypedDict
+from typing import Optional, TypedDict
 import os
 import json
 from datetime import datetime
@@ -26,7 +26,6 @@ class RequestOptions(TypedDict):
 
 ReportRunId = str
 Insights = list[dict]
-AsyncRequest = Callable[[requests.Session, str, datetime, datetime], ReportRunId]
 
 
 def _request_async_report(
