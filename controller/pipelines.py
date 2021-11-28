@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import requests
-from google.cloud import bigquery
 
 from libs.facebook import Insights, get
 from libs.bigquery import load
@@ -13,7 +12,6 @@ from models.AdsInsights.base import FBAdsInsights
 DATE_FORMAT = "%Y-%m-%d"
 
 SESSION = requests.Session()
-BQ_CLIENT = bigquery.Client()
 
 
 def factory(table: str) -> FBAdsInsights:
@@ -51,7 +49,7 @@ def run(
     start: Optional[str],
     end: Optional[str],
 ) -> dict:
-    data = get(SESSION, model, ads_account_id, *get_time_range(start, end))
+    data = get(model, ads_account_id, *get_time_range(start, end))
     response = {
         "ads_account_id": ads_account_id,
         "start": start,
@@ -60,7 +58,6 @@ def run(
     }
     if len(data) > 0:
         response["output_rows"] = load(
-            BQ_CLIENT,
             model,
             os.getenv("DATASET", "Facebook_dev"),
             ads_account_id,

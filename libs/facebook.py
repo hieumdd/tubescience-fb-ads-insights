@@ -2,7 +2,6 @@ import os
 import json
 from datetime import datetime
 import time
-from typing import Optional
 
 import requests
 
@@ -21,10 +20,7 @@ class AsyncFailedException(Exception):
 
 
 ReportRunId = str
-ReportRunRes = tuple[Optional[Exception], Optional[ReportRunId]]
-Insight = dict
-Insights = list[Insight]
-InsightsRes = tuple[Optional[Exception], Optional[Insights]]
+Insights = list[dict]
 
 
 def request_async_report(
@@ -144,7 +140,7 @@ def get_insights(
     session: requests.Session,
     report_run_id: ReportRunId,
     after: str = None,
-) -> InsightsRes:
+) -> Insights:
     try:
         with session.get(
             f"{BASE_URL}/{report_run_id}/insights",
@@ -168,19 +164,19 @@ def get_insights(
 
 
 def get(
-    session: requests.Session,
     model: FBAdsInsights,
     ads_account_id: str,
     start: datetime,
     end: datetime,
-) -> InsightsRes:
-    return get_insights(
-        session,
-        get_async_report(
+) -> Insights:
+    with requests.Session() as session:
+        return get_insights(
             session,
-            model,
-            ads_account_id,
-            start,
-            end,
-        ),
-    )
+            get_async_report(
+                session,
+                model,
+                ads_account_id,
+                start,
+                end,
+            ),
+        )
