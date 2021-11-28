@@ -14,6 +14,7 @@ TABLES = [
     "AgeGenderInsights",
     "RegionInsights",
     "DeviceInsights",
+    "PlatformPositionInsights",
 ]
 
 ACCOUNTS = [
