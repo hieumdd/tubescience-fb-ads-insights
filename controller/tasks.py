@@ -11,6 +11,8 @@ TASKS_CLIENT = tasks_v2.CloudTasksClient()
 TABLES = [
     "AdsInsights",
     "VideoInsights",
+    "AgeGenderInsights",
+    "RegionInsights",
 ]
 
 ACCOUNTS = [
@@ -168,7 +170,7 @@ def create_tasks(tasks_data: dict) -> dict:
                 "http_method": tasks_v2.HttpMethod.POST,
                 "url": os.getenv("PUBLIC_URL"),
                 "oidc_token": {
-                    "service_account_email": os.getenv('GCP_SA'),
+                    "service_account_email": os.getenv("GCP_SA"),
                 },
                 "headers": {"Content-type": "application/json"},
                 "body": json.dumps(payload["payload"]).encode(),
