@@ -1,27 +1,28 @@
-from models.AdsInsights.base import FBAdsInsights
+from models.AdsInsights.base import ads_insights_pipeline
 
-VideoInsights: FBAdsInsights = {
-    "name": "VideoInsights",
-    "fields": [
-        "date_start",
-        "date_stop",
-        "account_id",
-        "campaign_id",
-        "adset_id",
-        "ad_id",
-        "campaign_name",
-        "adset_name",
-        "ad_name",
-        "impressions",
-        "clicks",
-        "spend",
-        "reach",
-        "actions",
-        "action_values",
-    ],
-    "level": "ad",
-    "breakdowns": "video_asset",
-    "transform": lambda rows: [
+VideoInsights = ads_insights_pipeline(
+    request_options={
+        "level": "ad",
+        "fields": [
+            "date_start",
+            "date_stop",
+            "account_id",
+            "campaign_id",
+            "adset_id",
+            "ad_id",
+            "campaign_name",
+            "adset_name",
+            "ad_name",
+            "impressions",
+            "clicks",
+            "spend",
+            "reach",
+            "actions",
+            "action_values",
+        ],
+        "breakdowns": "video_asset",
+    },
+    transform=lambda rows: [
         {
             "account_id": row["account_id"],
             "date_start": row["date_start"],
@@ -74,60 +75,61 @@ VideoInsights: FBAdsInsights = {
         }
         for row in rows
     ],
-    "schema": [
-        {"name": "account_id", "type": "NUMERIC"},
-        {"name": "date_start", "type": "DATE"},
-        {"name": "date_stop", "type": "DATE"},
-        {"name": "campaign_id", "type": "NUMERIC"},
-        {"name": "adset_id", "type": "NUMERIC"},
-        {"name": "ad_id", "type": "NUMERIC"},
-        {"name": "campaign_name", "type": "STRING"},
-        {"name": "adset_name", "type": "STRING"},
-        {"name": "ad_name", "type": "STRING"},
-        {"name": "impressions", "type": "NUMERIC"},
-        {"name": "clicks", "type": "NUMERIC"},
-        {"name": "spend", "type": "NUMERIC"},
-        {"name": "reach", "type": "NUMERIC"},
-        {
-            "name": "video_asset",
-            "type": "RECORD",
-            "fields": [
-                {"name": "video_id", "type": "INTEGER"},
-                {"name": "url", "type": "STRING"},
-                {"name": "thumbnail_url", "type": "STRING"},
-                {"name": "video_name", "type": "STRING"},
-                {"name": "id", "type": "INTEGER"},
-            ],
-        },
-        {
-            "name": "actions",
-            "type": "RECORD",
-            "mode": "REPEATED",
-            "fields": [
-                {"name": "action_type", "type": "STRING"},
-                {"name": "value", "type": "NUMERIC"},
-                {"name": "_1d_view", "type": "NUMERIC"},
-                {"name": "_1d_click", "type": "NUMERIC"},
-                {"name": "_7d_click", "type": "NUMERIC"},
-                {"name": "_7d_view", "type": "NUMERIC"},
-            ],
-        },
-        {
-            "name": "action_values",
-            "type": "RECORD",
-            "mode": "REPEATED",
-            "fields": [
-                {"name": "action_type", "type": "STRING"},
-                {"name": "value", "type": "NUMERIC"},
-                {"name": "_1d_view", "type": "NUMERIC"},
-                {"name": "_1d_click", "type": "NUMERIC"},
-                {"name": "_7d_click", "type": "NUMERIC"},
-                {"name": "_7d_view", "type": "NUMERIC"},
-            ],
-        },
-        {"name": "_batched_at", "type": "TIMESTAMP"},
-    ],
-    "keys": {
+    load_options={
+        "name": "VideoInsights",
+        "schema": [
+            {"name": "account_id", "type": "NUMERIC"},
+            {"name": "date_start", "type": "DATE"},
+            {"name": "date_stop", "type": "DATE"},
+            {"name": "campaign_id", "type": "NUMERIC"},
+            {"name": "adset_id", "type": "NUMERIC"},
+            {"name": "ad_id", "type": "NUMERIC"},
+            {"name": "campaign_name", "type": "STRING"},
+            {"name": "adset_name", "type": "STRING"},
+            {"name": "ad_name", "type": "STRING"},
+            {"name": "impressions", "type": "NUMERIC"},
+            {"name": "clicks", "type": "NUMERIC"},
+            {"name": "spend", "type": "NUMERIC"},
+            {"name": "reach", "type": "NUMERIC"},
+            {
+                "name": "video_asset",
+                "type": "RECORD",
+                "fields": [
+                    {"name": "video_id", "type": "INTEGER"},
+                    {"name": "url", "type": "STRING"},
+                    {"name": "thumbnail_url", "type": "STRING"},
+                    {"name": "video_name", "type": "STRING"},
+                    {"name": "id", "type": "INTEGER"},
+                ],
+            },
+            {
+                "name": "actions",
+                "type": "RECORD",
+                "mode": "REPEATED",
+                "fields": [
+                    {"name": "action_type", "type": "STRING"},
+                    {"name": "value", "type": "NUMERIC"},
+                    {"name": "_1d_view", "type": "NUMERIC"},
+                    {"name": "_1d_click", "type": "NUMERIC"},
+                    {"name": "_7d_click", "type": "NUMERIC"},
+                    {"name": "_7d_view", "type": "NUMERIC"},
+                ],
+            },
+            {
+                "name": "action_values",
+                "type": "RECORD",
+                "mode": "REPEATED",
+                "fields": [
+                    {"name": "action_type", "type": "STRING"},
+                    {"name": "value", "type": "NUMERIC"},
+                    {"name": "_1d_view", "type": "NUMERIC"},
+                    {"name": "_1d_click", "type": "NUMERIC"},
+                    {"name": "_7d_click", "type": "NUMERIC"},
+                    {"name": "_7d_view", "type": "NUMERIC"},
+                ],
+            },
+            {"name": "_batched_at", "type": "TIMESTAMP"},
+        ],
         "p_key": [
             "date_start",
             "date_stop",
@@ -137,6 +139,5 @@ VideoInsights: FBAdsInsights = {
             "ad_id",
             "video_asset.id",
         ],
-        "incre_key": "_batched_at",
     },
-}
+)

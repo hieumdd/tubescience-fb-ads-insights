@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "tubescience_fb_ads_insights"
-version = "0.1.0"
+name = "tubescience-fb-ads-insights"
+version = "2.0"
 description = ""
 authors = ["HM <hieumdd@gmail.com>"]
 

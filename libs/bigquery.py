@@ -1,51 +1,49 @@
-import time
+from typing import TypedDict
 
 from google.cloud import bigquery
 
-from models.AdsInsights.base import FBAdsInsights
+BQ_CLIENT = bigquery.Client()
+
+
+class LoadOptions(TypedDict):
+    name: str
+    schema: list[dict]
+    p_key: list[str]
 
 
 def load(
-    client: bigquery.Client,
-    model: FBAdsInsights,
+    load_options: LoadOptions,
     dataset: str,
+    ads_account_id: str,
     rows: list[dict],
-    attempt: int = 0,
 ) -> int:
-    try:
-        output_rows = (
-            client.load_table_from_json(
-                rows,
-                f"{dataset}.{model['name']}",
-                job_config=bigquery.LoadJobConfig(
-                    create_disposition="CREATE_IF_NEEDED",
-                    write_disposition="WRITE_APPEND",
-                    schema=model["schema"],
-                ),
-            )
-            .result()
-            .output_rows
+    output_rows = (
+        BQ_CLIENT.load_table_from_json(
+            rows,
+            f"{dataset}.{load_options['name']}_{ads_account_id}",
+            job_config=bigquery.LoadJobConfig(
+                create_disposition="CREATE_IF_NEEDED",
+                write_disposition="WRITE_APPEND",
+                schema=load_options["schema"],
+            ),
         )
-        update(client, dataset, model)
-        return output_rows
-    except Exception as e:
-        if attempt < 10:
-            time.sleep(10)
-            return load(client, model, dataset, rows, attempt + 1)
-        else:
-            raise e
+        .result()
+        .output_rows
+    )
+    update(load_options, dataset, ads_account_id)
+    return output_rows
 
 
-def update(client: bigquery.Client, dataset: str, model: FBAdsInsights) -> None:
-    client.query(
+def update(load_options: LoadOptions, dataset: str, ads_account_id: str) -> None:
+    BQ_CLIENT.query(
         f"""
-    CREATE OR REPLACE TABLE {dataset}.{model['name']} AS
+    CREATE OR REPLACE TABLE {dataset}.{load_options['name']}_{ads_account_id} AS
     SELECT * EXCEPT(row_num) FROM
     (
         SELECT *,
         ROW_NUMBER() OVER (
-        PARTITION BY {','.join(model['keys']['p_key'])}
-        ORDER BY {model['keys']['incre_key']} DESC) AS row_num
-        FROM {dataset}.{model['name']}
+            PARTITION BY {','.join(load_options['p_key'])}
+            ORDER BY _batched_at DESC) AS row_num
+        FROM {dataset}.{load_options['name']}_{ads_account_id}
     ) WHERE row_num = 1"""
     ).result()
