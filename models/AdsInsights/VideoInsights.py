@@ -137,7 +137,7 @@ VideoInsights = ads_insights_pipeline(
             "campaign_id",
             "adset_id",
             "ad_id",
-            "video_asset.id",
+            "video_asset.video_id",
         ],
     },
 )
