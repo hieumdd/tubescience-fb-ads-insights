@@ -5,8 +5,8 @@ import pytest
 from main import main
 from controller.tasks import ACCOUNTS, TABLES
 
-START = "2021-11-10"
-END = "2021-11-20"
+START = "2021-12-14"
+END = "2021-12-22"
 
 
 def run(data):
@@ -25,11 +25,11 @@ def run(data):
     ("start", "end"),
     [
         (None, None),
-        (START, END),
+        # (START, END),
     ],
     ids=[
         "auto",
-        "manual",
+        # "manual",
     ],
 )
 def test_pipelines(table, ads_account_id, start, end):
@@ -52,11 +52,11 @@ def test_pipelines(table, ads_account_id, start, end):
 @pytest.mark.parametrize(
     ("start", "end"),
     [
-        (None, None),
+        # (None, None),
         (START, END),
     ],
     ids=[
-        "auto",
+        # "auto",
         "manual",
     ],
 )
