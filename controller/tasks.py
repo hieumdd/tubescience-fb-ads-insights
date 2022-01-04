@@ -142,6 +142,8 @@ ACCOUNTS = [
     # Dec 27
     "1101066376708812",
     "639674973066078",
+    # Jan 4
+    "2486679394960980",
 ]
 
 CLOUD_TASKS_PATH = (PROJECT_ID, "us-central1", "fb-ads-insights")
